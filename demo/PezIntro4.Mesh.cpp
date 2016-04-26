@@ -1,9 +1,8 @@
 // Written by Philip Rideout in May of 2010.  Covered by the MIT License.
-
+#include <gl_core_4_1.h>
 #include <pez.h>
 #include <vectormath_aos.h>
 #include <glsw.h>
-#include <glew.h>
 #include <openctm.h>
 
 using namespace Vectormath::Aos;
@@ -33,13 +32,13 @@ static GLuint BuildProgram(const char* vsKey, const char* fsKey);
 static void LoadMesh();
 static void LoadEffect();
 
-//   _____     _____    ______   
-//  (  __ \   / ___/   (____  )  
-//   ) )_) ) ( (__         / /   
-//  (  ___/   ) __)    ___/ /_   
-//   ) )     ( (      /__  ___)  
-//  ( (       \ \___    / /____  
-//  /__\       \____\  (_______) 
+//   _____     _____    ______
+//  (  __ \   / ___/   (____  )
+//   ) )_) ) ( (__         / /
+//  (  ___/   ) __)    ___/ /_
+//   ) )     ( (      /__  ___)
+//  ( (       \ \___    / /____
+//  /__\       \____\  (_______)
 //
 
 const char* PezInitialize(int width, int height)
@@ -87,13 +86,13 @@ void PezHandleMouse(int x, int y, int action)
 {
 }
 
-//   _____    ______      _____   __    __     ____     ________    _____  
-//  (  __ \  (   __ \    (_   _)  ) )  ( (    (    )   (___  ___)  / ___/  
-//   ) )_) )  ) (__) )     | |   ( (    ) )   / /\ \       ) )    ( (__    
-//  (  ___/  (    __/      | |    \ \  / /   ( (__) )     ( (      ) __)   
-//   ) )      ) \ \  _     | |     \ \/ /     )    (       ) )    ( (      
-//  ( (      ( ( \ \_))   _| |__    \  /     /  /\  \     ( (      \ \___  
-//  /__\      )_) \__/   /_____(     \/     /__(  )__\    /__\      \____\ 
+//   _____    ______      _____   __    __     ____     ________    _____
+//  (  __ \  (   __ \    (_   _)  ) )  ( (    (    )   (___  ___)  / ___/
+//   ) )_) )  ) (__) )     | |   ( (    ) )   / /\ \       ) )    ( (__
+//  (  ___/  (    __/      | |    \ \  / /   ( (__) )     ( (      ) __)
+//   ) )      ) \ \  _     | |     \ \/ /     )    (       ) )    ( (
+//  ( (      ( ( \ \_))   _| |__    \  /     /  /\  \     ( (      \ \___
+//  /__\      )_) \__/   /_____(     \/     /__(  )__\    /__\      \____\
 //
 
 static GLuint BuildShader(const char* source, GLenum shaderType)
@@ -147,6 +146,10 @@ static void LoadMesh()
     CTMuint vertexCount = ctmGetInteger(ctmContext, CTM_VERTEX_COUNT);
     rc.IndexCount = 3 * ctmGetInteger(ctmContext, CTM_TRIANGLE_COUNT);
 
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
     // Create the VBO for positions:
     const CTMfloat* positions = ctmGetFloatArray(ctmContext, CTM_VERTICES);
     if (positions) {
@@ -190,7 +193,7 @@ static void LoadEffect()
 
     glswInit();
     glswSetPath("../demo/", ".glsl");
-    glswAddDirectiveToken("GL3", "#version 320");
+    glswAddDirectiveToken("GL3", "#version 150");
 
     const char* vsKey = "PixelLighting.Vertex." PEZ_GL_VERSION_TOKEN;
     const char* fsKey = "PixelLighting.Fragment." PEZ_GL_VERSION_TOKEN;

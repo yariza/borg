@@ -81,12 +81,12 @@ void PezRender(GLuint windowFbo)
     glUniform3f(fillColor, 1, 1, 1);
     glUniform2f(scale, 1.0f / ViewportWidth, 1.0f / ViewportHeight);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    
+
     // Draw obstacles:
     glBindTexture(GL_TEXTURE_2D, HiresObstacles.TextureHandle);
     glUniform3f(fillColor, 0.125f, 0.4f, 0.75f);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    
+
     // Disable blending:
     glDisable(GL_BLEND);
 }

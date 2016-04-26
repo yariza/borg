@@ -85,6 +85,7 @@
         }
 
         const char* szTitle = PezInitialize(PEZ_VIEWPORT_WIDTH, PEZ_VIEWPORT_HEIGHT);
+
         m_didInit = YES;
 
         [[self window] setLevel: NSNormalWindowLevel];

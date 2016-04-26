@@ -22,9 +22,11 @@ void PezRender()
 
 const char* PezInitialize(int width, int height)
 {
+    printf("eh?\n");
     BuildGeometry();
     LoadEffect();
     LoadTexture();
+    printf("hey we're here\n");
     return "Pez Intro";
 }
 
@@ -33,6 +35,7 @@ static void LoadTexture()
     png_t gandhi;
     unsigned char* data;
     GLuint textureHandle;
+    GLenum err;
 
     png_init(0, 0);
     png_open_file_read(&gandhi, "../demo/Gandhi.png");
@@ -40,6 +43,7 @@ static void LoadTexture()
     png_get_data(&gandhi, data);
 
     glGenTextures(1, &textureHandle);
+    PezCheckCondition(!(err = glGetError()), "Error genTexture: %#06x\n", err);
     glBindTexture(GL_TEXTURE_2D, textureHandle);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, gandhi.width, gandhi.height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -65,13 +69,16 @@ static void BuildGeometry()
     #undef Y
 
     GLuint vboHandle;
+    GLuint vao;
     GLsizeiptr vboSize = sizeof(verts);
     GLsizei stride = 4 * sizeof(float);
     GLenum usage = GL_STATIC_DRAW;
     GLvoid* texCoordOffset = (GLvoid*) (sizeof(float) * 2);
 
     glGenBuffers(1, &vboHandle);
+    glGenVertexArrays(1, &vao);
     glBindBuffer(GL_ARRAY_BUFFER, vboHandle);
+    glBindVertexArray(vao);
     glBufferData(GL_ARRAY_BUFFER, vboSize, verts, usage);
     glVertexAttribPointer(PositionSlot, 2, GL_FLOAT, GL_FALSE, stride, 0);
     glVertexAttribPointer(TexCoordSlot, 2, GL_FLOAT, GL_FALSE, stride, texCoordOffset);
@@ -98,7 +105,7 @@ static void LoadEffect()
 
     vsHandle = glCreateShader(GL_VERTEX_SHADER);
     fsHandle = glCreateShader(GL_FRAGMENT_SHADER);
-    
+
     glShaderSource(vsHandle, 1, &vsSource, 0);
     glCompileShader(vsHandle);
     glGetShaderiv(vsHandle, GL_COMPILE_STATUS, &compileSuccess);

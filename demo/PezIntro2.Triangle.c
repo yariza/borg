@@ -15,6 +15,11 @@ void PezRender()
 {
     glClear(GL_COLOR_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    GLenum err;
+    // PezCheckCondition(!(err = glGetError()), "Error drawing Arrays: %#06x\n", err);
+    // if ((error = glGetError())) {
+    //     printf("GL ERROR: %d\n", error);
+    // }
 }
 
 const char* PezInitialize(int width, int height)
@@ -33,18 +38,29 @@ static void BuildGeometry()
     };
 
     GLuint vboHandle;
+    GLuint vao;
     GLsizeiptr vboSize = sizeof(verts);
     GLsizei stride = 5 * sizeof(float);
     GLenum usage = GL_STATIC_DRAW;
     GLvoid* colorOffset = (GLvoid*) (sizeof(float) * 2);
+    GLenum err;
 
     glGenBuffers(1, &vboHandle);
+    PezCheckCondition(!(err = glGetError()), "Error genBuffers: %#06x\n", err);
+    glGenVertexArrays(1, &vao);
+    PezCheckCondition(!(err = glGetError()), "Error glGenVertexArrays: %#06x\n", err);
     glBindBuffer(GL_ARRAY_BUFFER, vboHandle);
+    glBindVertexArray(vao);
+    PezCheckCondition(!(err = glGetError()), "Error bindBuffer: %#06x\n", err);
     glBufferData(GL_ARRAY_BUFFER, vboSize, verts, usage);
+    PezCheckCondition(!(err = glGetError()), "Error bufferData: %#06x\n", err);
     glVertexAttribPointer(PositionSlot, 2, GL_FLOAT, GL_FALSE, stride, 0);
+    PezCheckCondition(!(err = glGetError()), "Error vertexAttribPointer: %#06x\n", err);
     glVertexAttribPointer(ColorSlot, 3, GL_FLOAT, GL_FALSE, stride, colorOffset);
+    PezCheckCondition(!(err = glGetError()), "Error 2vertexAttribPointer: %#06x\n", err);
     glEnableVertexAttribArray(PositionSlot);
     glEnableVertexAttribArray(ColorSlot);
+    PezCheckCondition(!(err = glGetError()), "Error enableVertexAttribArray: %#06x\n", err);
 
     // GLuint shaderProgram;
     // GLuint vertexArrayObject;
@@ -75,6 +91,7 @@ static void LoadEffect()
     GLint compileSuccess, linkSuccess;
     GLchar compilerSpew[256];
     GLuint programHandle;
+    GLenum err;
 
     glswInit();
     glswSetPath("../demo/", ".glsl");
@@ -88,7 +105,9 @@ static void LoadEffect()
 
     vsHandle = glCreateShader(GL_VERTEX_SHADER);
     fsHandle = glCreateShader(GL_FRAGMENT_SHADER);
-    
+
+    // PezCheckCondition(!(err = glGetError()), "Error before: %#06x\n", err);
+
     glShaderSource(vsHandle, 1, &vsSource, 0);
     glCompileShader(vsHandle);
     glGetShaderiv(vsHandle, GL_COMPILE_STATUS, &compileSuccess);
@@ -115,4 +134,5 @@ static void LoadEffect()
     PezCheckCondition(linkSuccess, compilerSpew);
 
     glUseProgram(programHandle);
+    // PezCheckCondition(!(err = glGetError()), "Error using program: %#06x\n", err);
 }

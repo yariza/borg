@@ -1,5 +1,5 @@
+#include <gl_core_4_1.h>
 #include <pez.h>
-#include <glew.h>
 
 typedef struct Surface_ {
     GLuint FboHandle;
