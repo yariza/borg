@@ -88,9 +88,12 @@ FILE( GLOB BORG
 )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
 
-ADD_EXECUTABLE( borg ${CONSOLE_SYSTEM} ${BORG} test.glsl )
-set_property (TARGET borg APPEND_STRING PROPERTY
-              COMPILE_FLAGS "-fobjc-arc")
+ADD_EXECUTABLE( borg ${CONSOLE_SYSTEM} ${BORG} )
+
+IF ( APPLE )
+    set_property (TARGET borg APPEND_STRING PROPERTY
+                  COMPILE_FLAGS "-fobjc-arc")
+ENDIF()
 
 TARGET_LINK_LIBRARIES( borg ${PLATFORM_LIBS} PezEcosystem )
 
