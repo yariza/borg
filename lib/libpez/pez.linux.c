@@ -1,9 +1,8 @@
 // Pez was developed by Philip Rideout and released under the MIT License.
 
 #include <sys/time.h>
+#include <gl_core_4_1.h>
 #include <pez.h>
-#include <glxew.h>
-#include <glew.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -37,7 +36,7 @@ int main(int argc, char** argv)
 #endif
         None
     };
-    
+
     PlatformContext context;
 
     context.MainDisplay = XOpenDisplay(NULL);
@@ -93,29 +92,30 @@ int main(int argc, char** argv)
                 GLX_CONTEXT_MINOR_VERSION_ARB, 0,
                 GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
                 0
-            }; 
+            };
             glcontext = glXCreateContextAttribs(context.MainDisplay, framebufferConfig[0], NULL, True, attribs);
             glXMakeCurrent(context.MainDisplay, 0, 0);
             glXDestroyContext(context.MainDisplay, tempContext);
-        } 
+        }
     } else {
         glcontext = glXCreateContext(context.MainDisplay, visinfo, NULL, True);
     }
 
     glXMakeCurrent(context.MainDisplay, context.MainWindow, glcontext);
-    
-    GLenum err = glewInit();
-    if (GLEW_OK != err)
-        PezFatalError("GLEW Error: %s\n", glewGetErrorString(err));
-        
+
+    if(ogl_LoadFunctions() == ogl_LOAD_FAILED) {
+        printf("loadFunctions failed. Quitting\n");
+        exit(1);
+    }
+
     // Reset OpenGL error state:
     glGetError();
 
     PezDebugString("OpenGL Version: %s\n", glGetString(GL_VERSION));
-    
+
     const char* windowTitle = PezInitialize(PEZ_VIEWPORT_WIDTH, PEZ_VIEWPORT_HEIGHT);
     XStoreName(context.MainDisplay, context.MainWindow, windowTitle);
-    
+
     // -------------------
     // Start the Game Loop
     // -------------------
@@ -123,24 +123,24 @@ int main(int argc, char** argv)
     unsigned int previousTime = GetMilliseconds();
     int done = 0;
     while (!done) {
-        
+
         if (glGetError() != GL_NO_ERROR)
             PezFatalError("OpenGL error.\n");
 
         if (XPending(context.MainDisplay)) {
             XEvent event;
-    
+
             XNextEvent(context.MainDisplay, &event);
             switch (event.type)
             {
                 case Expose:
                     //redraw(display, event.xany.window);
                     break;
-                
+
                 case ConfigureNotify:
                     //resize(event.xconfigure.width, event.xconfigure.height);
                     break;
-                
+
                 case ButtonPress:
                     PezHandleMouse(event.xbutton.x, event.xbutton.y, PEZ_DOWN);
                     break;
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
                     char asciiCode[32];
                     KeySym keySym;
                     int len;
-                    
+
                     len = XLookupString(&event.xkey, asciiCode, sizeof(asciiCode), &keySym, &composeStatus);
                     switch (asciiCode[0]) {
                         case 'x': case 'X': case 'q': case 'Q':
@@ -174,7 +174,7 @@ int main(int argc, char** argv)
         unsigned int currentTime = GetMilliseconds();
         unsigned int deltaTime = currentTime - previousTime;
         previousTime = currentTime;
-        
+
         PezUpdate(deltaTime);
 
         PezRender();
