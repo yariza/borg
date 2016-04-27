@@ -56,11 +56,7 @@ ELSEIF( UNIX )
         lib/libpez/pez.linux.c
     )
 
-    FIND_LIBRARY( OPENGL_LIBRARY OpenGL )
-    FIND_LIBRARY( X11_LIBRARY X11 )
-    FIND_LIBRARY( X_EXTENSIONS Xext )
-
-    SET( PLATFORM_LIBS X11 GL Xext )
+    SET( PLATFORM_LIBS X11 GL Xext m )
 
 ENDIF()
 

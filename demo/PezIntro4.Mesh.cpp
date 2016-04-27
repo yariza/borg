@@ -1,5 +1,5 @@
 // Written by Philip Rideout in May of 2010.  Covered by the MIT License.
-#include <gl_core_4_1.h>
+#include <gl_core_3_3.h>
 #include <pez.h>
 #include <vectormath_aos.h>
 #include <glsw.h>

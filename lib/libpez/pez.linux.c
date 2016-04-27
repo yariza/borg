@@ -2,9 +2,8 @@
 
 #include <sys/time.h>
 
-#include <X11/X.h>
+#include <gl_core_3_3.h>
 #include <X11/Xlib.h>
-#include <gl_core_4_1.h>
 #include <GL/glx.h>
 #include <pez.h>
 #include <stdlib.h>
@@ -28,8 +27,10 @@ unsigned int GetMilliseconds()
 int main(int argc, char** argv)
 {
     int attrib[] = {
+        GLX_X_RENDERABLE, True,
         GLX_RENDER_TYPE, GLX_RGBA_BIT,
         GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+        GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
         GLX_DOUBLEBUFFER, True,
         GLX_RED_SIZE, 1,
         GLX_GREEN_SIZE, 1,
@@ -44,6 +45,20 @@ int main(int argc, char** argv)
     PlatformContext context;
 
     context.MainDisplay = XOpenDisplay(NULL);
+
+    if (!context.MainDisplay) {
+        printf("Failed to open X display\n");
+        exit(1);
+    }
+
+    int glx_major, glx_minor;
+    if ( !glXQueryVersion( context.MainDisplay, &glx_major, &glx_minor ) || 
+         ( ( glx_major == 1 ) && ( glx_minor < 3 ) ) || ( glx_major < 1 ) ) {
+        printf("Invalid GLX version");
+        exit(1);
+    }
+    printf("glx version: %d, %d\n", glx_major, glx_minor);
+
     int screen = DefaultScreen(context.MainDisplay);
     Window root = RootWindow(context.MainDisplay, screen);
 
@@ -93,7 +108,7 @@ int main(int argc, char** argv)
         } else {
             int attribs[] = {
                 GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-                GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+                GLX_CONTEXT_MINOR_VERSION_ARB, 3,
                 GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
                 0
             };
@@ -111,9 +126,6 @@ int main(int argc, char** argv)
         printf("loadFunctions failed. Quitting\n");
         exit(1);
     }
-
-    // Reset OpenGL error state:
-    glGetError();
 
     PezDebugString("OpenGL Version: %s\n", glGetString(GL_VERSION));
 

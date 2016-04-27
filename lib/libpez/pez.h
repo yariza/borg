@@ -12,7 +12,7 @@ void PezHandleMouse(int x, int y, int action);    // handle mouse action: PEZ_DO
 
 #define PEZ_VIEWPORT_WIDTH 853
 #define PEZ_VIEWPORT_HEIGHT 480
-#define PEZ_ENABLE_MULTISAMPLING 1
+#define PEZ_ENABLE_MULTISAMPLING 0
 #define PEZ_VERTICAL_SYNC 1
 
 #if defined(__APPLE__)
