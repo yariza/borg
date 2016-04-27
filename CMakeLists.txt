@@ -56,12 +56,16 @@ ELSEIF( UNIX )
         lib/libpez/pez.linux.c
     )
 
-    SET( PLATFORM_LIBS X11 GL )
+    FIND_LIBRARY( OPENGL_LIBRARY OpenGL )
+    FIND_LIBRARY( X11_LIBRARY X11 )
+    FIND_LIBRARY( X_EXTENSIONS Xext )
+
+    SET( PLATFORM_LIBS X11 GL Xext )
 
 ENDIF()
 
 INCLUDE_DIRECTORIES(
-    lib/glew
+#    lib/glew
     lib/glsw
     lib/liblzma
     lib/openctm
@@ -72,7 +76,7 @@ INCLUDE_DIRECTORIES(
 )
 
 ADD_LIBRARY( PezEcosystem
-    ${GLEW}
+#    ${GLEW}
     ${GLSW}
     ${LZMA}
     ${OPENCTM}
@@ -95,7 +99,7 @@ IF ( APPLE )
                   COMPILE_FLAGS "-fobjc-arc")
 ENDIF()
 
-TARGET_LINK_LIBRARIES( borg ${PLATFORM_LIBS} PezEcosystem )
+TARGET_LINK_LIBRARIES( borg PezEcosystem ${PLATFORM_LIBS} )
 
 # ANSI C SAMPLES:
 

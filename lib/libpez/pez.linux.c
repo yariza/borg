@@ -1,7 +1,11 @@
 // Pez was developed by Philip Rideout and released under the MIT License.
 
 #include <sys/time.h>
+
+#include <X11/X.h>
+#include <X11/Xlib.h>
 #include <gl_core_4_1.h>
+#include <GL/glx.h>
 #include <pez.h>
 #include <stdlib.h>
 #include <stdio.h>
