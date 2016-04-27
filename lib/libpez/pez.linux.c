@@ -57,7 +57,6 @@ int main(int argc, char** argv)
         printf("Invalid GLX version");
         exit(1);
     }
-    printf("glx version: %d, %d\n", glx_major, glx_minor);
 
     int screen = DefaultScreen(context.MainDisplay);
     Window root = RootWindow(context.MainDisplay, screen);

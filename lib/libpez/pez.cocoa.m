@@ -83,6 +83,7 @@
             NSLog(@"loadFunctions failed");
             [[NSApplication sharedApplication] terminate:self];
         }
+        PezDebugString("OpenGL Version: %s\n", glGetString(GL_VERSION));
 
         const char* szTitle = PezInitialize(PEZ_VIEWPORT_WIDTH, PEZ_VIEWPORT_HEIGHT);
 
@@ -158,10 +159,32 @@
         [self onKey:[characters characterAtIndex:characterIndex] downEvent:YES];
 }
 
+
+- (BOOL)canBecomeKeyView
+{
+    return  YES;
+}
+- (BOOL)acceptsFirstResponder
+{
+    return  YES;
+}
+
 @end
 
 int main(int argc, const char *argv[]) {
     NSApplication *app = [NSApplication sharedApplication];
+    [app setActivationPolicy:NSApplicationActivationPolicyRegular];
+    id menubar = [NSMenu new];
+    id appMenuItem = [NSMenuItem new];
+    [menubar addItem:appMenuItem];
+    [app setMainMenu:menubar];
+    id appMenu = [NSMenu new];
+    id appName = [[NSProcessInfo processInfo] processName];
+    id quitTitle = [@"Quit " stringByAppendingString:appName];
+    id quitMenuItem = [[NSMenuItem alloc] initWithTitle:quitTitle
+        action:@selector(terminate:) keyEquivalent:@"q"];
+    [appMenu addItem:quitMenuItem];
+    [appMenuItem setSubmenu:appMenu];
     NSRect frame = NSMakeRect( 100., 100., 300., 300. );
     
     NSRect screenBounds = [[NSScreen mainScreen] frame];
@@ -183,9 +206,14 @@ int main(int argc, const char *argv[]) {
 
     [window setContentView:view];
     [window setDelegate:view];
+
+
     [window makeKeyAndOrderFront:nil];
+    [app activateIgnoringOtherApps:YES];
+
 
     [app run];
+
 
     return( EXIT_SUCCESS );
 }
