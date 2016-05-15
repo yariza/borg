@@ -1,5 +1,5 @@
 #include <pez.h>
-#include <gl_core_3_3.h>
+#include <glad.h>
 #include <glsw.h>
 
 static void BuildGeometry();

@@ -2,7 +2,7 @@
 
 #include <sys/time.h>
 
-#include <gl_core_3_3.h>
+#include <glad.h>
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 #include <pez.h>

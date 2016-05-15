@@ -1,5 +1,5 @@
-#include <gl_core_3_3.h>
-#include <pez.h>
+#include <glad.h>
+#include "GLFWViewer.h"
 
 typedef struct Surface_ {
     GLuint FboHandle;
@@ -17,9 +17,10 @@ typedef struct Vector2_ {
     int Y;
 } Vector2;
 
+static int ViewportWidth = 640;
+static int ViewportHeight = 480;
+
 #define CellSize (1.25f)
-#define ViewportWidth (PEZ_VIEWPORT_WIDTH)
-#define ViewportHeight (PEZ_VIEWPORT_HEIGHT)
 #define GridWidth (ViewportWidth / 2)
 #define GridHeight (ViewportHeight / 2)
 #define SplatRadius ((float) GridWidth / 8.0f)

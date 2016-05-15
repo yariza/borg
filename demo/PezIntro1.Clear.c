@@ -1,4 +1,4 @@
-#include <gl_core_3_3.h>
+#include <glad.h>
 #include <pez.h>
 #include <math.h>
 
