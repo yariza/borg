@@ -39,13 +39,9 @@ FILE( GLOB VECTORMATH lib/vectormath/cpp/*.h )
 FILE( GLOB ZLIB lib/zlib/*.c lib/zlib/*.h )
 FILE( GLOB GLAD lib/glad/*.c lib/glad/*.h )
 
-IF( WIN32 )
-    FILE( GLOB PEZ
-        lib/libpez/pez.h
-        lib/libpez/pez.windows.c
-    )
+IF( CYGWIN )
+    SET(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++ )
 
-    SOURCE_GROUP( "glew" FILES ${GLEW} )
     SOURCE_GROUP( "glsw" FILES ${GLSW} )
     SOURCE_GROUP( "lzma" FILES ${LZMA} )
     SOURCE_GROUP( "openctm" FILES ${OPENCTM} )
@@ -56,11 +52,14 @@ IF( WIN32 )
     SOURCE_GROUP( "glad" FILES ${GLAD} )
     SOURCE_GROUP( "shaders" FILES ${SHADERS} )
 
-    ADD_DEFINITIONS( -DGLEW_STATIC )
     ADD_DEFINITIONS( -DOPENCTM_STATIC )
-    ADD_DEFINITIONS( /wd4996 )
+    ADD_DEFINITIONS( -DGLFW_STATIC )
     SET( PLATFORM_LIBS opengl32 )
-    SET( CONSOLE_SYSTEM WIN32 )
+  #  SET( CONSOLE_SYSTEM WIN32 )
+
+  FIND_LIBRARY( DL_LIBRARY dl )
+
+    SET( PLATFORM_LIBS ${DL_LIBRARY} )
 
 ELSEIF( APPLE )
 
@@ -73,17 +72,9 @@ ELSEIF( APPLE )
 
 ELSEIF( UNIX )
 
-    FILE( GLOB PEZ
-        lib/libpez/pez.h
-        lib/libpez/pez.linux.c
-    )
-
     SET( PLATFORM_LIBS X11 GL Xext m )
 
 ENDIF()
-
-FIND_PATH( CMATH_INCLUDE_DIR math.h )
-MESSAGE(STATUS ${CMAATH_INCLUDE_DIR})
 
 INCLUDE_DIRECTORIES(
     lib/glsw
@@ -121,7 +112,6 @@ ADD_LIBRARY( BorgEcosystem
     ${GLAD}
     ${JPEG_LIBRARY}
     ${BORG}
-    # ${GLFW_LIBRARY}
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")

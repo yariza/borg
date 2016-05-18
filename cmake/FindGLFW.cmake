@@ -41,6 +41,7 @@ find_path( GLFW_INCLUDE_DIR
         "${OPENGL_INCLUDE_DIR}"
         /usr/openwin/share/include
         /usr/openwin/include
+        /usr/x86_64-w64-mingw32/include
         /usr/X11R6/include
         /usr/include/X11
         /opt/graphics/OpenGL/include
@@ -54,106 +55,101 @@ find_path( GLFW_INCLUDE_DIR
         "The directory where GL/glfw.h resides"
 )
 
-if (WIN32)
-    if(CYGWIN)
-        find_library( GLFW_glfw_LIBRARY 
-            NAMES
-                glfw32
-            PATHS
-                "${GLFW_LOCATION}/lib"
-                "${GLFW_LOCATION}/lib/x64"
-                "$ENV{GLFW_LOCATION}/lib"
-                "${OPENGL_LIBRARY_DIR}"
-                /usr/lib
-                /usr/lib/w32api
-                /usr/local/lib
-                /usr/X11R6/lib
-            DOC 
-                "The GLFW library"
-        )
-    else()
-        find_library( GLFW_glfw_LIBRARY
-            NAMES 
-                glfw32 
-                glfw32s 
-                glfw
-                glfw3
-            PATHS
-                "${GLFW_LOCATION}/lib"
-                "${GLFW_LOCATION}/lib/x64"
-                "${GLFW_LOCATION}/lib-msvc110"
-                "$ENV{GLFW_LOCATION}/lib"
-                "$ENV{GLFW_LOCATION}/lib/x64"
-                "$ENV{GLFW_LOCATION}/lib-msvc110"
-                "${PROJECT_SOURCE_DIR}/extern/glfw/bin"
-                "${PROJECT_SOURCE_DIR}/extern/glfw/lib"
-                "$ENV{PROGRAMFILES}/GLFW/lib"
-                "${OPENGL_LIBRARY_DIR}"
-            DOC 
-                "The GLFW library"
-        )
-    endif()
+if (CYGWIN)
+    find_library( GLFW_glfw_LIBRARY 
+        NAMES
+            glfw32
+            glfw32s
+            glfw
+            glfw3
+        PATHS
+            "${GLFW_LOCATION}/lib"
+            "${GLFW_LOCATION}/lib/x64"
+            "$ENV{GLFW_LOCATION}/lib"
+            "${OPENGL_LIBRARY_DIR}"
+            /usr/x86_64-w64-mingw32/lib
+            /usr/lib
+            /usr/lib/w32api
+            /usr/local/lib
+            /usr/X11R6/lib
+        DOC 
+            "The GLFW library"
+    )
+elseif(WIN32)
+    find_library( GLFW_glfw_LIBRARY
+        NAMES 
+            glfw32 
+            glfw32s 
+            glfw
+            glfw3
+        PATHS
+            "${GLFW_LOCATION}/lib"
+            "${GLFW_LOCATION}/lib/x64"
+            "${GLFW_LOCATION}/lib-msvc110"
+            "$ENV{GLFW_LOCATION}/lib"
+            "$ENV{GLFW_LOCATION}/lib/x64"
+            "$ENV{GLFW_LOCATION}/lib-msvc110"
+            "${PROJECT_SOURCE_DIR}/extern/glfw/bin"
+            "${PROJECT_SOURCE_DIR}/extern/glfw/lib"
+            "$ENV{PROGRAMFILES}/GLFW/lib"
+            "${OPENGL_LIBRARY_DIR}"
+        DOC 
+            "The GLFW library"
+    )
+elseif (APPLE)
+    find_library( GLFW_glfw_LIBRARY glfw
+        NAMES 
+            glfw
+            glfw3
+        PATHS
+            "${GLFW_LOCATION}/lib"
+            "${GLFW_LOCATION}/lib/cocoa"
+            "$ENV{GLFW_LOCATION}/lib"
+            "$ENV{GLFW_LOCATION}/lib/cocoa"
+            /usr/local/lib
+    )
+    set(GLFW_cocoa_LIBRARY "-framework Cocoa" CACHE STRING "Cocoa framework for OSX")
+    set(GLFW_corevideo_LIBRARY "-framework CoreVideo" CACHE STRING "CoreVideo framework for OSX")
+    set(GLFW_iokit_LIBRARY "-framework IOKit" CACHE STRING "IOKit framework for OSX")
 else ()
-    if (APPLE)
-        find_library( GLFW_glfw_LIBRARY glfw
-            NAMES 
-                glfw
-                glfw3
-            PATHS
-                "${GLFW_LOCATION}/lib"
-                "${GLFW_LOCATION}/lib/cocoa"
-                "$ENV{GLFW_LOCATION}/lib"
-                "$ENV{GLFW_LOCATION}/lib/cocoa"
-                /usr/local/lib
-        )
-        set(GLFW_cocoa_LIBRARY "-framework Cocoa" CACHE STRING "Cocoa framework for OSX")
-        set(GLFW_corevideo_LIBRARY "-framework CoreVideo" CACHE STRING "CoreVideo framework for OSX")
-        set(GLFW_iokit_LIBRARY "-framework IOKit" CACHE STRING "IOKit framework for OSX")
-    else ()
-        # (*)NIX
-        
-        find_package(Threads REQUIRED)
-
-        find_package(X11 REQUIRED)
-        
-        if(NOT X11_Xrandr_FOUND)
-            message(FATAL_ERROR "Xrandr library not found - required for GLFW")
-        endif()
-
-        if(NOT X11_xf86vmode_FOUND)
-            message(FATAL_ERROR "xf86vmode library not found - required for GLFW")
-        endif()
-
-        if(NOT X11_Xcursor_FOUND)
-            message(FATAL_ERROR "Xcursor library not found - required for GLFW")
-        endif()
-
-        list(APPEND GLFW_x11_LIBRARY "${X11_Xrandr_LIB}" "${X11_Xxf86vm_LIB}" "${X11_Xcursor_LIB}" "${CMAKE_THREAD_LIBS_INIT}" -lrt -lXi)
-
-        find_library( GLFW_glfw_LIBRARY
-            NAMES 
-                glfw
-                glfw3
-            PATHS
-                "${GLFW_LOCATION}/lib"
-                "$ENV{GLFW_LOCATION}/lib"
-                "${GLFW_LOCATION}/lib/x11"
-                "$ENV{GLFW_LOCATION}/lib/x11"
-                /usr/lib64
-                /usr/lib
-                /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}
-                /usr/local/lib64
-                /usr/local/lib
-                /usr/local/lib/${CMAKE_LIBRARY_ARCHITECTURE}
-                /usr/openwin/lib
-                /usr/X11R6/lib
-                ~/lib
-                ~/Installs/lib
-            DOC 
-                "The GLFW library"
-        )
-    endif (APPLE)
-endif (WIN32)
+    # (*)NIX
+    
+    find_package(Threads REQUIRED)
+     find_package(X11 REQUIRED)
+    
+    if(NOT X11_Xrandr_FOUND)
+        message(FATAL_ERROR "Xrandr library not found - required for GLFW")
+    endif()
+    if(NOT X11_xf86vmode_FOUND)
+        message(FATAL_ERROR "xf86vmode library not found - required for GLFW")
+    endif()
+    if(NOT X11_Xcursor_FOUND)
+        message(FATAL_ERROR "Xcursor library not found - required for GLFW")
+    endif()
+     list(APPEND GLFW_x11_LIBRARY "${X11_Xrandr_LIB}" "${X11_Xxf86vm_LIB}" "${X11_Xcursor_LIB}" "${CMAKE_THREAD_LIBS_INIT}" -lrt -lXi)
+     find_library( GLFW_glfw_LIBRARY
+        NAMES 
+            glfw
+            glfw3
+        PATHS
+            "${GLFW_LOCATION}/lib"
+            "$ENV{GLFW_LOCATION}/lib"
+            "${GLFW_LOCATION}/lib/x11"
+            "$ENV{GLFW_LOCATION}/lib/x11"
+            /usr/lib64
+            /usr/lib
+            /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}
+            /usr/local/lib64
+            /usr/local/lib
+            /usr/local/lib/${CMAKE_LIBRARY_ARCHITECTURE}
+            /usr/openwin/lib
+            /usr/X11R6/lib
+            ~/lib
+            ~/Installs/lib
+        DOC 
+            "The GLFW library"
+    )
+endif ()
 
 set( GLFW_FOUND "NO" )
 
@@ -199,7 +195,7 @@ if(GLFW_INCLUDE_DIR)
  
     endif()
 
-    if(${GLFW_VERSION_MAJOR} OR ${GLFW_VERSION_MINOR} OR ${GLFW_VERSION_REVISION})
+    if("${GLFW_VERSION_MAJOR}" OR "${GLFW_VERSION_MINOR}" OR "${GLFW_VERSION_REVISION}")
         set(GLFW_VERSION "${GLFW_VERSION_MAJOR}.${GLFW_VERSION_MINOR}.${GLFW_VERSION_REVISION}")
         set(GLFW_VERSION_STRING "${GLFW_VERSION}")
         mark_as_advanced(GLFW_VERSION)
