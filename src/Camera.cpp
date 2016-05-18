@@ -63,16 +63,7 @@ void Camera::updateProjectionMatrix() {
     float left = bottom * aspect;
     float right = top * aspect;
 
-    float fx = 2.0f * mNearPlane / (right - left);
-    float fy = 2.0f * mNearPlane / (top - bottom);
-    float fz = -(mFarPlane + mNearPlane) / (mFarPlane - mNearPlane);
-    float fw = -2.0f * mFarPlane * mNearPlane / (mFarPlane - mNearPlane);
-
-    // Recompute the projection matrix
-    mProjectionMatrix = glm::mat4(fx, 0, 0, 0,
-                                0, fy, 0, 0,
-                                0, 0, fz, fw,
-                                0, 0, -1, 0);
+    mProjectionMatrix = glm::frustum(left, right, bottom, top, mNearPlane, mFarPlane);
 }
 
 // Translate the camera go a given point using the dx, dy fraction

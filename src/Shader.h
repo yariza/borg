@@ -28,10 +28,12 @@
 
 // Libraries
 #include "definitions.h"
-#include "maths/Matrix4.h"
-#include "maths/Vector2.h"
-#include "maths/Vector3.h"
-#include "maths/Vector4.h"
+// #include "maths/Matrix4.h"
+// #include "maths/Vector2.h"
+// #include "maths/Vector3.h"
+// #include "maths/Vector4.h"
+#include <glm/glm.hpp>
+#include <assert.h>
 #include <string>
 #include <iostream>
 #include <glad.h>
@@ -93,17 +95,17 @@ class Shader {
         // Set a vector 2 uniform value to this shader (be careful if the uniform is not
         // used in the shader, the compiler will remove it, then when you will try
         // to set it, an assert will occur)
-        void setVector2Uniform(const std::string& variableName, const Vector2& v) const;
+        void setVector2Uniform(const std::string& variableName, const glm::vec2& v) const;
 
         // Set a vector 3 uniform value to this shader (be careful if the uniform is not
         // used in the shader, the compiler will remove it, then when you will try
         // to set it, an assert will occur)
-        void setVector3Uniform(const std::string& variableName, const Vector3& v) const;
+        void setVector3Uniform(const std::string& variableName, const glm::vec3& v) const;
 
         // Set a vector 4 uniform value to this shader (be careful if the uniform is not
         // used in the shader, the compiler will remove it, then when you will try
         // to set it, an assert will occur)
-        void setVector4Uniform(const std::string& variableName, const Vector4 &v) const;
+        void setVector4Uniform(const std::string& variableName, const glm::vec4 &v) const;
 
         // Set a 3x3 matrix uniform value to this shader (be careful if the uniform is not
         // used in the shader, the compiler will remove it, then when you will try
@@ -120,7 +122,7 @@ class Shader {
         // Set a 4x4 matrix uniform value to this shader (be careful if the uniform is not
         // used in the shader, the compiler will remove it, then when you will try
         // to set it, an assert will occur)
-        void setMatrix4x4Uniform(const std::string& variableName, const Matrix4& matrix) const;
+        void setMatrix4x4Uniform(const std::string& variableName, const glm::mat4& matrix) const;
 
         // Return true if the needed OpenGL extensions are available
         static bool checkOpenGLExtensions();
@@ -178,7 +180,7 @@ inline void Shader::setIntUniform(const std::string& variableName, int value) co
 // Set a vector 2 uniform value to this shader (be careful if the uniform is not
 // used in the shader, the compiler will remove it, then when you will try
 // to set it, an assert will occur)
-inline void Shader::setVector2Uniform(const std::string& variableName, const Vector2& v) const {
+inline void Shader::setVector2Uniform(const std::string& variableName, const glm::vec2& v) const {
     assert(mProgramObjectID != 0);
     glUniform2f(getUniformLocation(variableName), v.x, v.y);
 }
@@ -186,7 +188,7 @@ inline void Shader::setVector2Uniform(const std::string& variableName, const Vec
 // Set a vector 3 uniform value to this shader (be careful if the uniform is not
 // used in the shader, the compiler will remove it, then when you will try
 // to set it, an assert will occur)
-inline void Shader::setVector3Uniform(const std::string& variableName, const Vector3 &v) const {
+inline void Shader::setVector3Uniform(const std::string& variableName, const glm::vec3 &v) const {
     assert(mProgramObjectID != 0);
     glUniform3f(getUniformLocation(variableName), v.x, v.y, v.z);
 }
@@ -194,7 +196,7 @@ inline void Shader::setVector3Uniform(const std::string& variableName, const Vec
 // Set a vector 4 uniform value to this shader (be careful if the uniform is not
 // used in the shader, the compiler will remove it, then when you will try
 // to set it, an assert will occur)
-inline void Shader::setVector4Uniform(const std::string& variableName, const Vector4& v) const {
+inline void Shader::setVector4Uniform(const std::string& variableName, const glm::vec4& v) const {
     assert(mProgramObjectID != 0);
     glUniform4f(getUniformLocation(variableName), v.x, v.y, v.z, v.w);
 }
@@ -220,12 +222,12 @@ inline void Shader::setMatrix4x4Uniform(const std::string& variableName, const f
 // Set a 4x4 matrix uniform value to this shader (be careful if the uniform is not
 // used in the shader, the compiler will remove it, then when you will try
 // to set it, an assert will occur)
-inline void Shader::setMatrix4x4Uniform(const std::string& variableName, const Matrix4& matrix) const {
+inline void Shader::setMatrix4x4Uniform(const std::string& variableName, const glm::mat4& matrix) const {
     assert(mProgramObjectID != 0);
     GLfloat mat[16];
     for (int i=0; i<4; i++) {
         for (int j=0; j<4; j++) {
-            mat[i*4 + j] = matrix.m[i][j];
+            mat[i*4 + j] = matrix[i][j];
         }
     }
     glUniformMatrix4fv(getUniformLocation(variableName), 1, true, mat);

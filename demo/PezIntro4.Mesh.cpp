@@ -6,8 +6,8 @@
 #include <openctm.h>
 #include <iostream>
 #include "definitions.h"
-
-using namespace Vectormath::Aos;
+#include <glm/glm.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 enum { SlotPosition, SlotNormal };
 
@@ -20,9 +20,9 @@ struct ShaderUniforms {
 struct RenderContext {
     GLuint EffectHandle;
     ShaderUniforms EffectUniforms;
-    Matrix4 Projection;
-    Matrix4 Modelview;
-    Matrix3 NormalMatrix;
+    glm::mat4 Projection;
+    glm::mat4 Modelview;
+    glm::mat3 NormalMatrix;
     float PackedNormalMatrix[9];
     float Theta;
     CTMuint IndexCount;
@@ -157,6 +157,12 @@ public:
         LoadMesh();
         LoadEffect();
         glEnable(GL_DEPTH_TEST);
+
+        const float x = 0.6f;
+        const float y = x * m_frameBufferHeight / m_frameBufferWidth;
+        const float zNear = 0.1, zFar = 100;
+        m_camera.setDimensions(x, y);
+        m_camera.setClippingPlanes(zNear, zFar);
     }
 
     void render() {
@@ -174,22 +180,19 @@ public:
 
         rc.Theta += m_delta * 50.f;
 
-        Matrix4 rotation = Matrix4::rotationY(rc.Theta * borg::PI / 180.0f);
-        Matrix4 translation = Matrix4::translation(Vector3(0, 0, -50));
-        rc.Modelview = translation * rotation;
-        rc.NormalMatrix = rc.Modelview.getUpper3x3();
+        // glm::mat4 rotation = glm::eulerAngleY(rc.Theta * borg::PI / 180.0f);
+        // glm::mat4 translation = glm::translate(glm::mat4(), glm::vec3(0, 0, -50));
+
+        glm::mat4 transform = glm::inverse(m_camera.getTransformMatrix());
+
+        // rc.Modelview = translation * rotation;
+        rc.Modelview = transform;
+        rc.NormalMatrix = glm::mat3(rc.Modelview);
 
         for (int i = 0; i < 9; ++i)
             rc.PackedNormalMatrix[i] = rc.NormalMatrix[i / 3][i % 3];
 
-
-
-        const float x = 0.6f;
-        const float y = x * m_frameBufferHeight / m_frameBufferWidth;
-        const float left = -x, right = x;
-        const float bottom = -y, top = y;
-        const float zNear = 4, zFar = 100;
-        rc.Projection = Matrix4::frustum(left, right, bottom, top, zNear, zFar);
+        rc.Projection = m_camera.getProjectionMatrix();
     }
 };
 

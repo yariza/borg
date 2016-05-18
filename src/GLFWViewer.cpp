@@ -21,6 +21,11 @@ static void mouseMotionCallback(GLFWwindow* window, double xMouse, double yMouse
     viewer->mouseMotion(xMouse, yMouse);
 }
 
+static void mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
+    GLFWViewer* viewer = (GLFWViewer*)glfwGetWindowUserPointer(window);
+    viewer->mouseScroll(xOffset, yOffset);
+}
+
 static void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     GLFWViewer* viewer = (GLFWViewer*)glfwGetWindowUserPointer(window);
     viewer->keyboard(key, scancode, action, mods);
@@ -68,12 +73,13 @@ bool GLFWViewer::init(const string& windowsTitle,
     glfwSetFramebufferSizeCallback(m_window, reshapeCallback);
     glfwSetKeyCallback(m_window, keyboardCallback);
     glfwSetMouseButtonCallback(m_window, mouseButtonCallback);
+    glfwSetScrollCallback(m_window, mouseScrollCallback);
     glfwSetCursorPosCallback(m_window, mouseMotionCallback);
 
-    // float radius = 10.0f;
-    // Vector3 center(0.0, 0.0, 0.0);
+    float radius = 10.0f;
+    glm::vec3 center(0.0, 0.0, 0.0);
 
-    // setScenePosition(center, radius);
+    setScenePosition(center, radius);
 
     if(!gladLoadGL()) {
         cerr << "LoadFunctions failed." << std::endl;
@@ -88,7 +94,7 @@ void GLFWViewer::setup() {
 }
 
 void GLFWViewer::reshape(int width, int height) {
-    // mCamera.setDimensions(width, height);
+    m_camera.setDimensions(width, height);
     m_frameBufferWidth = width;
     m_frameBufferHeight = height;
 }
@@ -106,19 +112,19 @@ void GLFWViewer::mouseButton(int button, int action, int mods) {
 
     // If the mouse button is pressed
     if (action == GLFW_PRESS) {
-        mLastMouseX = x;
-        mLastMouseY = y;
-        // mIsLastPointOnSphereValid = mapMouseCoordinatesToSphere(x, y, mLastPointOnSphere);
+        m_lastMouseX = x;
+        m_lastMouseY = y;
+        m_isLastPointOnSphereValid = mapMouseCoordinatesToSphere(x, y, m_lastPointOnSphere);
     }
     else {  // If the mouse button is released
-        mIsLastPointOnSphereValid = false;
+        m_isLastPointOnSphereValid = false;
 
         // If it is a mouse wheel click event
         if (button == 3) {
-            // zoom(0, (int) (y - 0.05f * mCamera.getWidth()));
+            zoom(0, (int) (y - 0.05f * m_camera.getWidth()));
         }
         else if (button == 4) {
-            // zoom(0, (int) (y + 0.05f * mCamera.getHeight()));
+            zoom(0, (int) (y + 0.05f * m_camera.getHeight()));
         }
     }
 }
@@ -130,24 +136,30 @@ void GLFWViewer::mouseMotion(double xMouse, double yMouse) {
          glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) ||
         (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS &&
          glfwGetKey(m_window, GLFW_KEY_LEFT_ALT))) {
-        // zoom(xMouse, yMouse);
+        zoom(xMouse, yMouse);
     }
     // Translation
     else if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS ||
              glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS ||
              (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) &&
              glfwGetKey(m_window, GLFW_KEY_LEFT_ALT))) {
-        // translate(xMouse, yMouse);
+        translate(xMouse, yMouse);
     }
     // Rotation
     else if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT)) {
-        // rotate(xMouse, yMouse);
+        rotate(xMouse, yMouse);
     }
 
     // Remember the mouse position
-    mLastMouseX = xMouse;
-    mLastMouseY = yMouse;
-    // mIsLastPointOnSphereValid = mapMouseCoordinatesToSphere(xMouse, yMouse, mLastPointOnSphere);
+    m_lastMouseX = xMouse;
+    m_lastMouseY = yMouse;
+    m_isLastPointOnSphereValid = mapMouseCoordinatesToSphere(xMouse, yMouse, m_lastPointOnSphere);
+}
+
+void GLFWViewer::mouseScroll(double xOffset, double yOffset) {
+    float h = static_cast<float>(m_camera.getHeight());
+    // Zoom the camera
+    m_camera.setZoom(-yOffset / h);
 }
 
 void GLFWViewer::update() {
@@ -159,6 +171,8 @@ void GLFWViewer::render() {
 void GLFWViewer::mainLoop() {
 
     setup();
+    glfwGetFramebufferSize(m_window, &m_frameBufferWidth, &m_frameBufferHeight);
+    reshape(m_frameBufferWidth, m_frameBufferHeight);
 
     while (!glfwWindowShouldClose(m_window)) {
         glfwGetFramebufferSize(m_window, &m_frameBufferWidth, &m_frameBufferHeight);
@@ -178,84 +192,84 @@ void GLFWViewer::mainLoop() {
 }
 
 // Set the camera so that we can view the whole scene
-// void GLFWViewer::resetCameraToViewAll() {
+void GLFWViewer::resetCameraToViewAll() {
 
-//     // Move the camera to the origin of the scene
-//     mCamera.translateWorld(-mCamera.getOrigin());
+    // Move the camera to the origin of the scene
+    m_camera.translateWorld(-m_camera.getOrigin());
 
-//     // Move the camera to the center of the scene
-//     mCamera.translateWorld(mCenterScene);
+    // Move the camera to the center of the scene
+    m_camera.translateWorld(m_centerScene);
 
-//     // Set the zoom of the camera so that the scene center is
-//     // in negative view direction of the camera
-//     mCamera.setZoom(1.0);
-// }
+    // Set the zoom of the camera so that the scene center is
+    // in negative view direction of the camera
+    m_camera.setZoom(1.0);
+}
 
 // Map the mouse x,y coordinates to a point on a sphere
-// bool GLFWViewer::mapMouseCoordinatesToSphere(int xMouse, int yMouse, Vector3& spherePoint) const {
+bool GLFWViewer::mapMouseCoordinatesToSphere(int xMouse, int yMouse, glm::vec3& spherePoint) const {
 
-//     int width = mCamera.getWidth();
-//     int height = mCamera.getHeight();
+    int width = m_camera.getWidth();
+    int height = m_camera.getHeight();
 
-//     if ((xMouse >= 0) && (xMouse <= width) && (yMouse >= 0) && (yMouse <= height)) {
-//         float x = float(xMouse - 0.5f * width) / float(width);
-//         float y = float(0.5f * height - yMouse) / float(height);
-//         float sinx = sin(PIE * x * 0.5f);
-//         float siny = sin(PIE * y * 0.5f);
-//         float sinx2siny2 = sinx * sinx + siny * siny;
+    if ((xMouse >= 0) && (xMouse <= width) && (yMouse >= 0) && (yMouse <= height)) {
+        float x = float(xMouse - 0.5f * width) / float(width);
+        float y = float(0.5f * height - yMouse) / float(height);
+        float sinx = sin(PI * x * 0.5f);
+        float siny = sin(PI * y * 0.5f);
+        float sinx2siny2 = sinx * sinx + siny * siny;
 
-//         // Compute the point on the sphere
-//         spherePoint.x = sinx;
-//         spherePoint.y = siny;
-//         spherePoint.z = (sinx2siny2 < 1.0) ? sqrt(1.0f - sinx2siny2) : 0.0f;
+        // Compute the point on the sphere
+        spherePoint.x = sinx;
+        spherePoint.y = siny;
+        spherePoint.z = (sinx2siny2 < 1.0) ? sqrt(1.0f - sinx2siny2) : 0.0f;
 
-//         return true;
-//     }
+        return true;
+    }
 
-//     return false;
-// }
+    return false;
+}
 
 // Zoom the camera
-// void GLFWViewer::zoom(int xMouse, int yMouse) {
-//     float dy = static_cast<float>(yMouse - mLastMouseY);
-//     float h = static_cast<float>(mCamera.getHeight());
+void GLFWViewer::zoom(int xMouse, int yMouse) {
+    float dy = static_cast<float>(yMouse - m_lastMouseY);
+    float h = static_cast<float>(m_camera.getHeight());
 
-//     // Zoom the camera
-//     mCamera.setZoom(-dy / h);
-// }
+    // Zoom the camera
+    m_camera.setZoom(-dy / h);
+}
 
 // Translate the camera
-// void GLFWViewer::translate(int xMouse, int yMouse) {
-//    float dx = static_cast<float>(xMouse - mLastMouseX);
-//    float dy = static_cast<float>(yMouse - mLastMouseY);
+void GLFWViewer::translate(int xMouse, int yMouse) {
+   float dx = static_cast<float>(xMouse - m_lastMouseX);
+   float dy = static_cast<float>(yMouse - m_lastMouseY);
 
-//    // Translate the camera
-//    mCamera.translateCamera(-dx / float(mCamera.getWidth()),
-//                            -dy / float(mCamera.getHeight()), mCenterScene);
-// }
+   // Translate the camera
+   m_camera.translateCamera(-dx / float(m_camera.getWidth()),
+                           -dy / float(m_camera.getHeight()), m_centerScene);
+}
 
 // Rotate the camera
-// void GLFWViewer::rotate(int xMouse, int yMouse) {
-//     if (mIsLastPointOnSphereValid) {
+void GLFWViewer::rotate(int xMouse, int yMouse) {
+    if (m_isLastPointOnSphereValid) {
 
-//         Vector3 newPoint3D;
-//         bool isNewPointOK = mapMouseCoordinatesToSphere(xMouse, yMouse, newPoint3D);
+        glm::vec3 newPoint3D;
+        bool isNewPointOK = mapMouseCoordinatesToSphere(xMouse, yMouse, newPoint3D);
 
-//         if (isNewPointOK) {
-//             Vector3 axis = mLastPointOnSphere.cross(newPoint3D);
-//             float cosAngle = mLastPointOnSphere.dot(newPoint3D);
+        if (isNewPointOK) {
+            glm::vec3 axis = glm::cross(m_lastPointOnSphere, newPoint3D);
+            float cosAngle = glm::dot(m_lastPointOnSphere, newPoint3D);
 
-//             float epsilon = std::numeric_limits<float>::epsilon();
-//             if (fabs(cosAngle) < 1.0f && axis.length() > epsilon) {
-//                 axis.normalize();
-//                 float angle = 2.0f * acos(cosAngle);
+            float epsilon = std::numeric_limits<float>::epsilon();
+            if (fabs(cosAngle) < 1.0f && axis.length() > epsilon) {
+                axis = glm::normalize(axis);
+                float angle = 2.0f * acos(cosAngle);
 
-//                 // Rotate the camera around the center of the scene>
-//                 mCamera.rotateAroundLocalPoint(axis, -angle, mCenterScene);
-//             }
-//         }
-//     }
-// }
+                // Rotate the camera around the center of the scene>
+                m_camera.rotateAroundLocalPoint(axis, -angle, m_centerScene);
+            }
+        }
+    }
+}
 
 void GLFWViewer::getWindowSize(int &width, int &height) {
     glfwGetFramebufferSize(m_window, &width, &height);
