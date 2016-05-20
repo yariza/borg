@@ -41,6 +41,7 @@ FILE( GLOB GLAD lib/glad/*.c lib/glad/*.h )
 
 IF( CYGWIN )
     SET(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++ )
+    SET(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc )
 
     SOURCE_GROUP( "glsw" FILES ${GLSW} )
     SOURCE_GROUP( "lzma" FILES ${LZMA} )
@@ -53,13 +54,9 @@ IF( CYGWIN )
     SOURCE_GROUP( "shaders" FILES ${SHADERS} )
 
     ADD_DEFINITIONS( -DOPENCTM_STATIC )
-    ADD_DEFINITIONS( -DGLFW_STATIC )
-    SET( PLATFORM_LIBS opengl32 )
-  #  SET( CONSOLE_SYSTEM WIN32 )
+#     ADD_DEFINITIONS( -DGLFW_STATIC )
 
-  FIND_LIBRARY( DL_LIBRARY dl )
-
-    SET( PLATFORM_LIBS ${DL_LIBRARY} )
+    SET( PLATFORM_LIBS dl opengl32 gdi32 stdc++ )
 
 ELSEIF( APPLE )
 
@@ -88,11 +85,6 @@ INCLUDE_DIRECTORIES(
     ${GLFW_INCLUDE_DIR}
     ${JPEG_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/src
-)
-
-FILE( GLOB BORG
-    src/GLFWViewer.cpp
-    src/GLFWViewer.h
 )
 
 append_files (
